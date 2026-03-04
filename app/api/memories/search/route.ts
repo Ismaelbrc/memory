@@ -21,6 +21,14 @@ export async function POST(req: NextRequest) {
     const { query, top_k, type_filter, tags_filter, threshold } = parsed.data
 
     const queryEmbedding = await generateEmbedding(query)
+
+    if (!queryEmbedding) {
+      return NextResponse.json(
+        { error: 'Serviço de embeddings não disponível. Configure EMBEDDING_PROVIDER.' },
+        { status: 503 }
+      )
+    }
+
     const candidates = await getEmbeddableMemories(
       auth.project.id,
       type_filter as MemoryType[] | undefined,

@@ -145,7 +145,7 @@ export async function createMemory(data: CreateMemoryData): Promise<Memory> {
   let embeddingJson: string | null = null
   if (shouldEmbed) {
     const vector = await generateEmbedding(data.content)
-    embeddingJson = embeddingToJson(vector)
+    if (vector) embeddingJson = embeddingToJson(vector)
   }
 
   await pool.execute(
@@ -178,8 +178,10 @@ export async function updateMemory(
     values.push(data.content)
     if (existing.embedding || ALWAYS_EMBED_TYPES.has(existing.type)) {
       const vector = await generateEmbedding(data.content)
-      fields.push('embedding = ?')
-      values.push(embeddingToJson(vector))
+      if (vector) {
+        fields.push('embedding = ?')
+        values.push(embeddingToJson(vector))
+      }
     }
   }
   if (data.key_name !== undefined)  { fields.push('key_name = ?');  values.push(data.key_name) }
